@@ -1,45 +1,48 @@
 module.exports = function () {
-	'use strict';
+    'use strict';
 
-	var client = './src/client/',
-		clientApp = client + 'app/';
+    var client = './src/client/',
+        clientApp = client + 'app/',
+        temp = './.tmp/';
 
-	var config = {
-		alljs: [
-			'./src/**/*.js',
-			'*.js'
-		],
+    var config = {
+        alljs: [
+            './src/**/*.js',
+            '*.js'
+        ],
 
-		js: [
-			clientApp + '**/*.module.js',
-			clientApp + '**/*.js',
-			'!' + clientApp + '**/*.spec.js'
-		],
+        js: [
+            clientApp + '**/*.module.js',
+            clientApp + '**/*.js',
+            '!' + clientApp + '**/*.spec.js'
+        ],
 
-		less: client + 'styles/styles.less',
+        less: client + 'styles/styles.less',
 
-		tmp: './.tmp/',
+        css: temp + 'styles.css',
 
-		index: client + 'index.html',
+        tmp: temp,
 
-		client: client,
+        index: client + 'index.html',
 
-		bower: {
-			json: require('./bower.json'),
-			directory: './bower_components/',
-			ignorePath: '../..'
-		}
-	};
+        client: client,
 
-	config.getWiredepOptions = function () {
-		var options = {
-			bowerJson: config.bower.json,
-			directory: config.bower.directory,
-			ignorePath: config.bower.ignorePath
-		};
+        bower: {
+            json: require('./bower.json'),
+            directory: './bower_components/',
+            ignorePath: '../..'
+        }
+    };
 
-		return options;
-	};
+    config.getWiredepOptions = function () {
+        var options = {
+            bowerJson: config.bower.json,
+            directory: config.bower.directory,
+            ignorePath: config.bower.ignorePath
+        };
 
-	return config;
+        return options;
+    };
+
+    return config;
 };
