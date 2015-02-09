@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var args = require('yargs').argv;
 var config = require('./gulp.config')();
 var del = require('del');
+var browserSync = require('browser-sync');
 var wiredep = require('wiredep').stream;
 var $ = require('gulp-load-plugins')({lazy: true});
 
@@ -83,9 +84,14 @@ gulp.task('serve-dev', ['inject'], function () {
 	return $.nodemon(options)
 		.on('restart', function (ev) {
 			log('*** server restarted\n   File changed on restart:\n' + ev);
+			setTimeout(function () {
+				browserSync.notify('reloading now ...');
+				browserSync.reload({stream: false});
+			}, config.browserReloadDelay);
 		})
 		.on('start', function () {
 			log('*** server started');
+			startBrowserSync();
 		})
 		.on('crash', function () {
 			log('*** server crashed');
@@ -94,6 +100,35 @@ gulp.task('serve-dev', ['inject'], function () {
 			log('*** server exited');
 		});
 });
+
+function startBrowserSync () {
+	if (browserSync.active) {
+		return;
+	}
+
+	gulp.watch([config.less], ['less']);
+
+	var options = {
+		proxy: 'localhost:' + port,
+		port: 3000,
+		files: [config.client + '**/*.*', config.css, '!' + config.less],
+		ghostMode: {
+			clicks: true,
+			location: false,
+			forms: true,
+			scrolls: true
+		},
+		injectChanges: true,
+		logFileChanges: true,
+		logLevel: 'debug',
+		logPrefix: 'gulp-patterns',
+		notify: true,
+		reloadDelay: 1000
+	};
+
+	log('starting browser-sync on port ' + port);
+	browserSync(options);
+}
 
 function log(message) {
 	'use strict';
