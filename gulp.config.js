@@ -1,72 +1,74 @@
 module.exports = function () {
-    'use strict';
+	'use strict';
 
-    var client = './src/client/',
-        server = './src/server/',
-        clientApp = client + 'app/',
-        temp = './.tmp/';
+	var client = './src/client/',
+		server = './src/server/',
+		clientApp = client + 'app/',
+		temp = './.tmp/';
 
-    var config = {
-        alljs: [
-            './src/**/*.js',
-            '*.js'
-        ],
+	var config = {
+		alljs: [
+			'./src/**/*.js',
+			'*.js'
+		],
 
-        js: [
-            clientApp + '**/*.module.js',
-            clientApp + '**/*.js',
-            '!' + clientApp + '**/*.spec.js'
-        ],
+		js: [
+			clientApp + '**/*.module.js',
+			clientApp + '**/*.js',
+			'!' + clientApp + '**/*.spec.js'
+		],
 
-        less: client + 'styles/styles.less',
+		less: client + 'styles/styles.less',
 
-        css: temp + 'styles.css',
+		css: temp + 'styles.css',
 
-        tmp: temp,
+		tmp: temp,
 
-        index: client + 'index.html',
+		index: client + 'index.html',
 
-        client: client,
+		html: clientApp + '**/*.html',
 
-        server: server,
+		client: client,
 
-        bower: {
-            json: require('./bower.json'),
-            directory: './bower_components/',
-            ignorePath: '../..'
-        },
+		server: server,
 
-        defaultPort: 7203,
-        nodeServer: './src/server/app.js',
+		bower: {
+			json: require('./bower.json'),
+			directory: './bower_components/',
+			ignorePath: '../..'
+		},
 
-        browserReloadDelay: 1000,
+		defaultPort: 7203,
+		nodeServer: './src/server/app.js',
 
-        htmltemplates: clientApp + '**/*.html',
+		browserReloadDelay: 1000,
 
-        templateCache: {
-            file: 'templates.js',
-            options: {
-                module: 'app.core',
-                standAlone: false,
-                root: 'app/'
-            }
-        },
+		htmltemplates: clientApp + '**/*.html',
 
-        fonts: './bower_components/font-awesome/fonts/**/*.*',
-        images: client + 'images/**/*.*',
+		templateCache: {
+			file: 'templates.js',
+			options: {
+				module: 'app.core',
+				standAlone: false,
+				root: 'app/'
+			}
+		},
 
-        build: './build/'
-    };
+		fonts: './bower_components/font-awesome/fonts/**/*.*',
+		images: client + 'images/**/*.*',
 
-    config.getWiredepOptions = function () {
-        var options = {
-            bowerJson: config.bower.json,
-            directory: config.bower.directory,
-            ignorePath: config.bower.ignorePath
-        };
+		build: './build/'
+	};
 
-        return options;
-    };
+	config.getWiredepOptions = function () {
+		var options = {
+			bowerJson: config.bower.json,
+			directory: config.bower.directory,
+			ignorePath: config.bower.ignorePath
+		};
 
-    return config;
+		return options;
+	};
+
+	return config;
 };
