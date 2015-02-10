@@ -63,6 +63,15 @@ gulp.task('clean', function (done) {
     del(files, done);
 });
 
+gulp.task('clean-code', function (done) {
+    var files = [].concat(
+        config.tmp + '**/*.js',
+        config.build + '**/*.html',
+        config.build + 'js/**/*.js'
+    );
+    clean(files, done);
+});
+
 gulp.task('clean-styles', function (done) {
     'use strict';
     clean(config.tmp + '**/*.css', done);
@@ -136,6 +145,16 @@ gulp.task('serve-dev', ['inject'], function () {
         .on('exit', function () {
             log('*** server exited');
         });
+});
+
+gulp.task('templatecache', ['clean-code'], function () {
+    log('Creating AngularJS $templateCache');
+
+    return gulp
+        .src(config.htmltemplates)
+        .pipe($.minifyHtml({ empty: true }))
+        .pipe($.angularTemplatecache(config.templateCache.file, config.templateCache.options))
+        .pipe(gulp.dest(config.tmp));
 });
 
 function startBrowserSync () {

@@ -41,6 +41,17 @@ module.exports = function () {
 
         browserReloadDelay: 1000,
 
+        htmltemplates: clientApp + '**/*.html',
+
+        templateCache: {
+            file: 'templates.js',
+            options: {
+                module: 'app.core',
+                standAlone: false,
+                root: 'app/'
+            }
+        },
+
         fonts: './bower_components/font-awesome/fonts/**/*.*',
         images: client + 'images/**/*.*',
 
