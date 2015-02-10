@@ -133,15 +133,24 @@ gulp.task('templatecache', ['clean-code'], function () {
 		.pipe(gulp.dest(config.tmp));
 });
 
-gulp.task('optimize', ['inject', 'templatecache'], function () {
+gulp.task('optimize', ['inject', 'templatecache', 'images', 'fonts'], function () {
 	var templateCache = config.tmp + 'templates.js';
 	var assets = $.useref.assets({searchPath: './'});
+
+	var cssFilter = $.filter('**/*.css');
+	var jsFilter = $.filter('**/*.js');
 
 	return gulp
 		.src(config.index)
 		.pipe($.plumber())
 		.pipe($.inject(gulp.src(templateCache), {read: false}), {starttag: '<!-- inject:templates:js -->'})
 		.pipe(assets)
+		.pipe(cssFilter)
+		.pipe($.csso())
+		.pipe(cssFilter.restore())
+		.pipe(jsFilter)
+		.pipe($.uglify())
+		.pipe(jsFilter.restore())
 		.pipe(assets.restore())
 		.pipe($.useref())
 		.pipe(gulp.dest(config.build));
