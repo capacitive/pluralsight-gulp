@@ -15,6 +15,7 @@ var templateCache = require('gulp-angular-templatecache');
 
 var args = require('yargs').argv;
 var wiredep = require('wiredep').stream;
+var karma = require('karma').server;
 
 var del = require('del');
 
@@ -26,7 +27,7 @@ var reload = browserSync.reload;
  * Remove temporary and production folders
  */
 gulp.task('clean', function (done) {
-    del(['./.tmp', './dist'], done);
+	del(['./.tmp', './dist', './reports'], done);
 });
 
 
@@ -35,10 +36,10 @@ gulp.task('clean', function (done) {
  * Usage: gulp bump --type major|minor|patch or gulp bump for default 'patch' type
  */
 gulp.task('bump', function () {
-    return gulp.src(['./package.json', './bower.json'])
-        .pipe(print())
-        .pipe(bump({type: args.type || 'patch'}))
-        .pipe(gulp.dest('./'));
+	return gulp.src(['./package.json', './bower.json'])
+		.pipe(print())
+		.pipe(bump({type: args.type || 'patch'}))
+		.pipe(gulp.dest('./'));
 });
 
 
@@ -46,15 +47,15 @@ gulp.task('bump', function () {
  * Run nodemon and watch for changes
  */
 gulp.task('nodemon', function () {
-    return nodemon({
-        script: './src/server/app.js',
-        env: { 'NODE_ENV': 'dev', 'PORT': 7203 },
-        watch: ['src/server/**/*.js']
-    })
-    .on('restart', function (ev) {
-        console.log('Restarting nodemon ...');
-        console.log('Changed files:\n' + ev);
-    });
+	return nodemon({
+		script: './src/server/app.js',
+		env: { 'NODE_ENV': 'dev', 'PORT': 7203 },
+		watch: ['src/server/**/*.js']
+	})
+	.on('restart', function (ev) {
+		console.log('Restarting nodemon ...');
+		console.log('Changed files:\n' + ev);
+	});
 });
 
 
@@ -62,26 +63,26 @@ gulp.task('nodemon', function () {
  * Run browser sync
  */
 gulp.task('browser-sync', ['nodemon'], function () {
-    if (browserSync.active) {
-        return;
-    }
+	if (browserSync.active) {
+		return;
+	}
 
-    browserSync({
-        proxy: 'localhost:7203',
-        browser: 'chrome',
-        injectChanges: true,
-        files: ['./src/client/**/*.html', './src/client/**/*.js', './.tmp/styles.css']
-    });
+	browserSync({
+		proxy: 'localhost:7203',
+		browser: 'chrome',
+		injectChanges: true,
+		files: ['./src/client/**/*.html', './src/client/**/*.js', './.tmp/styles.css']
+	});
 });
 
 /**
  * Lint all js files with JSHint and JSCS
  */
 gulp.task('lint', function () {
-    return gulp.src(['./src/**/*.js', '*.js'])
-        .pipe(jscs())
-        .pipe(jshint())
-        .pipe(jshint.reporter('jshint-stylish', {verbose: true}));
+	return gulp.src(['./src/**/*.js', '*.js'])
+		.pipe(jscs())
+		.pipe(jshint())
+		.pipe(jshint.reporter('jshint-stylish', {verbose: true}));
 });
 
 
@@ -89,10 +90,10 @@ gulp.task('lint', function () {
  * Inject js and css files into index.html
  */
 gulp.task('inject', ['less'], function () {
-    return gulp.src('./src/client/index.html')
-        .pipe(inject(gulp.src(['./src/client/app/**/*.js', './src/client/app/**/*.module.js', '!./src/client/app/**/*.spec.js']), {read: false}))
-        .pipe(inject(gulp.src(['./.tmp/**/*.css']), {read: false}))
-        .pipe(gulp.dest('./src/client'));
+	return gulp.src('./src/client/index.html')
+		.pipe(inject(gulp.src(['./src/client/app/**/*.js', './src/client/app/**/*.module.js', '!./src/client/app/**/*.spec.js']), {read: false}))
+		.pipe(inject(gulp.src(['./.tmp/**/*.css']), {read: false}))
+		.pipe(gulp.dest('./src/client'));
 });
 
 
@@ -100,9 +101,9 @@ gulp.task('inject', ['less'], function () {
  * Inject bower js and css files into index.html
  */
 gulp.task('wiredep', function () {
-    return gulp.src('./src/client/index.html')
-    .pipe(wiredep({ignorePath: '../..', json: require('./bower.json'), directory: './bower_components/'}))
-        .pipe(gulp.dest('./src/client'));
+	return gulp.src('./src/client/index.html')
+	.pipe(wiredep({ignorePath: '../..', json: require('./bower.json'), directory: './bower_components/'}))
+		.pipe(gulp.dest('./src/client'));
 });
 
 
@@ -110,9 +111,9 @@ gulp.task('wiredep', function () {
  * Compile LESS to CSS
  */
 gulp.task('less', function () {
-    return gulp.src('./src/client/styles/**/*.less')
-        .pipe(less())
-        .pipe(gulp.dest('./.tmp/'));
+	return gulp.src('./src/client/styles/**/*.less')
+		.pipe(less())
+		.pipe(gulp.dest('./.tmp/'));
 });
 
 
@@ -120,10 +121,10 @@ gulp.task('less', function () {
  * Cache all angular templates
  */
 gulp.task('template-cache', function () {
-    return gulp.src('./src/client/app/**/*.html')
-        .pipe(minifyHtml({empty: true}))
-        .pipe(templateCache())
-        .pipe(gulp.dest('./.tmp/'));
+	return gulp.src('./src/client/app/**/*.html')
+		.pipe(minifyHtml({empty: true}))
+		.pipe(templateCache({module: 'app.core'}))
+		.pipe(gulp.dest('./.tmp/'));
 });
 
 
@@ -131,16 +132,28 @@ gulp.task('template-cache', function () {
  * Optimize css and js files
  */
 gulp.task('optimize', ['wiredep', 'inject'], function () {
-    var assets = useref.assets({searchPath: './'});
+	var assets = useref.assets({searchPath: './'});
 
-    return gulp.src('./src/client/index.html')
-        .pipe(inject(gulp.src('./.tmp/templates.js'), {read: false}), {starttag: '<!-- inject:templates:js -->'})
-        .pipe(assets)
-        .pipe(gulpif('*.js', uglify()))
-        .pipe(gulpif('*.css', minifyCss()))
-        .pipe(assets.restore())
-        .pipe(useref())
-        .pipe(gulp.dest('./dist'));
+	return gulp.src('./src/client/index.html')
+		.pipe(inject(gulp.src('./.tmp/templates.js'), {read: false}), {starttag: '<!-- inject:templates:js -->'})
+		.pipe(assets)
+		.pipe(gulpif('*.js', uglify()))
+		.pipe(gulpif('*.css', minifyCss()))
+		.pipe(assets.restore())
+		.pipe(useref())
+		.pipe(gulp.dest('./dist'));
+});
+
+
+/**
+ * Run tests
+ */
+gulp.task('test', ['template-cache'], function (done) {
+	karma.start({
+		configFile: __dirname + '/karma.conf.js',
+		exclude: ['./src/client/tests/server-integration/**/*.spec.js'],
+		singleRun: false
+	}, done);
 });
 
 
@@ -148,5 +161,6 @@ gulp.task('optimize', ['wiredep', 'inject'], function () {
  * Default task
  */
 gulp.task('default', ['inject', 'wiredep', 'browser-sync'], function () {
-    gulp.watch(['./src/client/styles/**/*.less'], ['less']);
+	gulp.start('test');
+	gulp.watch(['./src/client/styles/**/*.less'], ['less']);
 });
